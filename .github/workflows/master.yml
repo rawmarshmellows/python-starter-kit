@@ -1,0 +1,24 @@
+name: Master
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - run: pip install .
+      - run: pip install pre-commit pytest pytest-mock python-semantic-release
+      - run: pytest tests
+      - run: git config --global user.name "github-actions"
+      - run: git config --global user.email "action@github.com"
+      # If you want to just bump the version & update the change log
+      - run: SKIP=commitizen semantic-release publish -D upload_to_repository=false
+      # If you want to also publish to repostiory (note here you will need to setup your Token in Pypi
+      # or your artifact repository if you're not using Pypi)
+      - run: TWINE_USERNAME=__token__ TWINE_PASSWORD=${{ secrets.PROJECT_PYPI_TOKEN }} SKIP=commitizen semantic-release publish
